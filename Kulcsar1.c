@@ -10,39 +10,38 @@ typedef struct {
                 long* ProcT; //muveleti idok listajara mutato pointer
                 long* StartT; //inditasi idopont --||--
                 long* EndT;   //befejezesi idopont --||--
-               }T_JOB;
+               }StroctOfJobs;
 
 
 typedef struct {
                 long ST;
                 long ET;
-               }T_TIMEWINDOW;
+               }TimeWindows;
 
 typedef struct {
                 int id;  //azonosito
                 long* TransT;  //anyagmozgatasi ido
                 long** SetT;   //atallasi idok
                 int NCal;      //intervallumok sama
-                T_TIMEWINDOW* Cal;  //rendelkezesre allasi idointervallumok
-               }T_RES;
+                TimeWindows* Cal;  //rendelkezesre allasi idointervallumok
+               }StructOfMachines;
 
 
-long max_l(long a, long b) { return a>=b ? a : b; }
-long min_l(long a, long b) { return a<=b ? a : b; }
+long Max_Lateness(long a, long b) { return a>=b ? a : b; }
+long Min_Lateness(long a, long b) { return a<=b ? a : b; }
 
-void Simulation_FS( T_JOB* job, int NJ, T_RES* res, int NR, int* s, long t0);
-void print_Res_Gantt( T_JOB* job, int NJ, int NR, int* s);
-void print_Job_Gantt( T_JOB* job, int NJ, int NR, int* s);
-void Johnson_alg(T_JOB* job, int NJ, int r, int* s);
-long Evaluate(T_JOB* job, int NJ, int NR, int* s);
+void FlowShop_Simulator( StroctOfJobs* job, int NumberOfJobs, StructOfMachines* machine, int NumberOfMachines, int* s, long t0);
+void prinStructOfMachines_Gantt( StroctOfJobs* job, int NumberOfJobs, int NumberOfMachines, int* s);
+void prinStroctOfJobs_Gantt( StroctOfJobs* job, int NumberOfJobs, int NumberOfMachines, int* s);
+void Johnsons_algorithm(StroctOfJobs* job, int NumberOfJobs, int r, int* s);
+long Evaluate(StroctOfJobs* job, int NumberOfJobs, int NumberOfMachines, int* s);
 
-void Fm_Dannenbring_alg(T_JOB* job, int NJ, int NR, int* s);
-void copy_sch( int* s1, int* s2, int NJ );
-void Fm_CDS_alg(T_JOB* job, int NJ, T_RES* res, int NR, int* s);
+void Dannenbring_algorithm(StroctOfJobs* job, int NumberOfJobs, int NumberOfMachines, int* s);
+void CopyScheduling( int* s1, int* s2, int NumberOfJobs );
+void CDS_algorithm(StroctOfJobs* job, int NumberOfJobs, StructOfMachines* machine, int NumberOfMachines, int* s);
 
-void Fm_Search_alg(T_JOB* job, int NJ, T_RES* res, int NR, int* s, int STEP, int LOOP);
-void Print_Res_Cal(T_RES* res, int NR);
-int Load_STET_to_Cal(long* st, long* et, T_RES* res, int r);
+void PrinStructOfMachines_Cal(StructOfMachines* machine, int NumberOfMachines);
+int Load_STET_to_Cal(long* st, long* et, StructOfMachines* machine, int r);
 
 
 
@@ -56,72 +55,72 @@ int Load_STET_to_Cal(long* st, long* et, T_RES* res, int r);
 
 int main(int argc, char* argv[])
 {
-  int NJ; //munkak szama
+  int NumberOfJobs; //munkak szama
   int i, j;  //munka indexe
-  int NR; //munkahelyek (eroforrasok) szama
+  int NumberOfMachines; //munkahelyek (eroforrasok) szama
   int r, k;  //munkahely indexe
-  T_JOB* job;
-  T_RES* res;
+  StroctOfJobs* job;
+  StructOfMachines* machine;
   int* s; //kozos utemterv minden gepre, mert a munkak nem elozheti meg egymast
   int r_value;
   int c;  //idointervallum index
 
   printf(" \n Flow shop modell");
   printf("\n Munkak szama=");
-  scanf("%d", &NJ);
+  scanf("%d", &NumberOfJobs);
 
   printf("\n Munkahelyek szama=");
-  scanf("%d", &NR);
+  scanf("%d", &NumberOfMachines);
 
-  res = (T_RES*) calloc(NR, sizeof(T_RES) ); //eroforrasok
-  for( r=0; r<NR; r++)
+  machine = (StructOfMachines*) calloc(NumberOfMachines, sizeof(StructOfMachines) ); //eroforrasok
+  for( r=0; r<NumberOfMachines; r++)
     {
-      res[r].id = r;
-      res[r].TransT = (long*) calloc(NR, sizeof(long) );  //vektor
-      for( k=0; k<NR; k++)
-         res[r].TransT[k] = 10 + rand()%20;
+      machine[r].id = r;
+      machine[r].TransT = (long*) calloc(NumberOfMachines, sizeof(long) );  //vektor
+      for( k=0; k<NumberOfMachines; k++)
+         machine[r].TransT[k] = 10 + rand()%20;
 
-      res[r].SetT = (long**) calloc(NJ, sizeof(long*) );
-      for ( i=0; i<NJ; i++ )
+      machine[r].SetT = (long**) calloc(NumberOfJobs, sizeof(long*) );
+      for ( i=0; i<NumberOfJobs; i++ )
        {
-        res[r].SetT[i] = (long*) calloc(NJ, sizeof(long));
-        for (j=0; j<NJ; j++)
+        machine[r].SetT[i] = (long*) calloc(NumberOfJobs, sizeof(long));
+        for (j=0; j<NumberOfJobs; j++)
            if (i == j)
-               res[r].SetT[i][j] = 0;
+               machine[r].SetT[i][j] = 0;
            else
-               res[r].SetT[i][j] = 10 + rand()%100; //sorrendfuggo atallasi idok
+               machine[r].SetT[i][j] = 10 + rand()%100; //sorrendfuggo atallasi idok
        }
 
      //idointervallumok
-     res[r].NCal = 2 + rand()%10;
-     res[r].Cal = (T_TIMEWINDOW*) calloc(res[r].NCal, sizeof(T_TIMEWINDOW) ); //mem. fogl.
-     for ( c=0; c<res[r].NCal; c++)
+     machine[r].NCal = 2 + rand()%10;
+     machine[r].Cal = (TimeWindows*) calloc(machine[r].NCal, sizeof(TimeWindows) ); //mem. fogl.
+     for ( c=0; c<machine[r].NCal; c++)
        {  //nem lapolodhatnak at
           if ( c== 0 )
-              res[r].Cal[c].ST = 10 + rand()%30;
+              machine[r].Cal[c].ST = 10 + rand()%30;
           else
-              res[r].Cal[c].ST = res[r].Cal[c-1].ET + rand()%30;
+              machine[r].Cal[c].ST = machine[r].Cal[c-1].ET + rand()%30;
 
-          res[r].Cal[c].ET = res[r].Cal[c].ST + rand()%100;
+          machine[r].Cal[c].ET = machine[r].Cal[c].ST + rand()%100;
 
        }
 
     }
 
-  s = (int*) calloc(NJ, sizeof(int) ); //utemterv
-  job = (T_JOB*) calloc(NJ, sizeof(T_JOB) );
-  for( i=0; i<NJ; i++)
+  s = (int*) calloc(NumberOfJobs, sizeof(int) ); //utemterv
+  job = (StroctOfJobs*) calloc(NumberOfJobs, sizeof(StroctOfJobs) );
+  for( i=0; i<NumberOfJobs; i++)
    {
      job[i].id = i;
-     job[i].ProcT = (long*) calloc(NR, sizeof(long));  //muveleti idok gepenkent
-     for (r=0; r<NR; r++)
+     job[i].ProcT = (long*) calloc(NumberOfMachines, sizeof(long));  //muveleti idok gepenkent
+     for (r=0; r<NumberOfMachines; r++)
         job[i].ProcT[r] = 1 + rand()%100;
 
-     job[i].StartT = (long*) calloc(NR, sizeof(long));  //inditasi idopontok gepenkent
-     job[i].EndT = (long*) calloc(NR, sizeof(long));  //befejezesi idopontok gepenkent
+     job[i].StartT = (long*) calloc(NumberOfMachines, sizeof(long));  //inditasi idopontok gepenkent
+     job[i].EndT = (long*) calloc(NumberOfMachines, sizeof(long));  //befejezesi idopontok gepenkent
 
     //i] = i; //ad-hoc sorrend
-    s[i] = NJ-i-1; //forditott ad-hoc sorrend
+    s[i] = NumberOfJobs-i-1; //forditott ad-hoc sorrend
    }
 
    {   //teszt blokk
@@ -129,7 +128,7 @@ int main(int argc, char* argv[])
    long s, e;
    int x;
 
-   Print_Res_Cal(res, NR);
+   PrinStructOfMachines_Cal(machine, NumberOfMachines);
    printf("\n m = ");
    scanf("%d", &m);
    printf("\n s = ");
@@ -137,7 +136,7 @@ int main(int argc, char* argv[])
    printf("\n e = ");
    scanf("%ld", &e);
 
-   x = Load_STET_to_Cal(&s, &e, res, m);
+   x = Load_STET_to_Cal(&s, &e, machine, m);
 
    printf("\n s = %ld", s);
    printf("\n e = %ld", e);
@@ -150,32 +149,32 @@ int main(int argc, char* argv[])
 
    //ad-hoc sorrend szimulacioja
    printf("\n Ad-hoc sorrend");
-   Simulation_FS( job, NJ, res, NR, s, 0);
-   //print_Res_Gantt( job, NJ, NR, s);
-   //print_Job_Gantt( job, NJ, NR, s);
-   printf("\n Cmax = %ld", Evaluate(job, NJ, NR, s) );
+   FlowShop_Simulator( job, NumberOfJobs, machine, NumberOfMachines, s, 0);
+   //prinStructOfMachines_Gantt( job, NumberOfJobs, NumberOfMachines, s);
+   //prinStroctOfJobs_Gantt( job, NumberOfJobs, NumberOfMachines, s);
+   printf("\n Cmax = %ld", Evaluate(job, NumberOfJobs, NumberOfMachines, s) );
 
   
    //Fm|perm|Cmax
    printf("\n\n Dannenbring sorrend");
-   Fm_Dannenbring_alg(job, NJ, NR, s);
-   Simulation_FS( job, NJ, res, NR, s, 0);
-   //print_Res_Gantt( job, NJ, NR, s);
-   //print_Job_Gantt( job, NJ, NR, s);
-   printf("\n Cmax = %ld", Evaluate(job, NJ, NR, s) );
+   Dannenbring_algorithm(job, NumberOfJobs, NumberOfMachines, s);
+   FlowShop_Simulator( job, NumberOfJobs, machine, NumberOfMachines, s, 0);
+   //prinStructOfMachines_Gantt( job, NumberOfJobs, NumberOfMachines, s);
+   //prinStroctOfJobs_Gantt( job, NumberOfJobs, NumberOfMachines, s);
+   printf("\n Cmax = %ld", Evaluate(job, NumberOfJobs, NumberOfMachines, s) );
 
    //CDS algoritmus
    printf("\n\n CDS sorrend");
-   Fm_CDS_alg(job, NJ, res, NR, s);
-   Simulation_FS( job, NJ, res, NR, s, 0);
-   //print_Res_Gantt( job, NJ, NR, s);
-   //print_Job_Gantt( job, NJ, NR, s);
-   printf("\n Cmax = %ld", Evaluate(job, NJ, NR, s) );
+   CDS_algorithm(job, NumberOfJobs, machine, NumberOfMachines, s);
+   FlowShop_Simulator( job, NumberOfJobs, machine, NumberOfMachines, s, 0);
+   //prinStructOfMachines_Gantt( job, NumberOfJobs, NumberOfMachines, s);
+   //prinStroctOfJobs_Gantt( job, NumberOfJobs, NumberOfMachines, s);
+   printf("\n Cmax = %ld", Evaluate(job, NumberOfJobs, NumberOfMachines, s) );
 
    
 
   //mem. felszabaditas
-  for( i=0; i<NJ; i++)
+  for( i=0; i<NumberOfJobs; i++)
    {
      free( job[i].ProcT );
      free( job[i].StartT );
@@ -183,26 +182,26 @@ int main(int argc, char* argv[])
    }
   free( job );
 
-  for( r=0; r<NR; r++)
+  for( r=0; r<NumberOfMachines; r++)
    {
-      free(res[r].TransT);
-      for( i=0; i<NJ; i++)
-        free( res[r].SetT[i]);
+      free(machine[r].TransT);
+      for( i=0; i<NumberOfJobs; i++)
+        free( machine[r].SetT[i]);
 
-      free( res[r].Cal );  
+      free( machine[r].Cal );  
    }
-   free( res );
+   free( machine );
 
     return 0;
 }
 
-void Simulation_FS( T_JOB* job, int NJ, T_RES* res, int NR, int* s, long t0)
+void FlowShop_Simulator( StroctOfJobs* job, int NumberOfJobs, StructOfMachines* machine, int NumberOfMachines, int* s, long t0)
 {
   int i; //az inditas sorrendjenek indexe
   int r; //munkahely indexe, technologiai sorrendet koveti a gepek azonositoja
 
-  for( i=0; i<NJ; i++ )
-    for( r=0; r<NR; r++ )
+  for( i=0; i<NumberOfJobs; i++ )
+    for( r=0; r<NumberOfMachines; r++ )
       {
          if ( i==0 )
             { //kezdo munka
@@ -213,13 +212,13 @@ void Simulation_FS( T_JOB* job, int NJ, T_RES* res, int NR, int* s, long t0)
               else
                 { //nem kezdo gepen
                   job[s[i]].StartT[r] = job[s[i]].EndT[r-1]  //befejezes
-                                        + res[r].TransT[r-1]; //mozgatas
+                                        + machine[r].TransT[r-1]; //mozgatas
                 }
 
                        //bef = indul + atall + dolgozik;
                        //alapertelmezett beallitas kezdetben a 0 job
                 job[s[i]].EndT[r] = job[s[i]].StartT[r]   //kezdes
-                             + res[r].SetT[ 0 ][ s[i] ] //atallas
+                             + machine[r].SetT[ 0 ][ s[i] ] //atallas
                              + job[s[i]].ProcT[r];  //muvelet
 
             }
@@ -231,12 +230,12 @@ void Simulation_FS( T_JOB* job, int NJ, T_RES* res, int NR, int* s, long t0)
                 }
               else
                 { //nem kezdo gepen                       erkezes = befezes + mozgatas
-                  job[s[i]].StartT[r] = max_l( job[s[i]].EndT[r-1] + res[r].TransT[r-1],  //elozo geprol mikor erkezik
+                  job[s[i]].StartT[r] = Max_Lateness( job[s[i]].EndT[r-1] + machine[r].TransT[r-1],  //elozo geprol mikor erkezik
                                                job[s[i-1]].EndT[r] ); //elozo munka mikor fejezodik be
                 }
                      //bef = indul + atall + dolgozik;
                  job[s[i]].EndT[r] = job[s[i]].StartT[r]   //kezdes
-                             + res[r].SetT[ s[i-1] ][ s[i] ] //atallas
+                             + machine[r].SetT[ s[i-1] ][ s[i] ] //atallas
                              + job[s[i]].ProcT[r];  //muvelet
 
             }
@@ -245,18 +244,18 @@ void Simulation_FS( T_JOB* job, int NJ, T_RES* res, int NR, int* s, long t0)
       }
 }
 
-void print_Res_Gantt( T_JOB* job, int NJ, int NR, int* s)
+void prinStructOfMachines_Gantt( StroctOfJobs* job, int NumberOfJobs, int NumberOfMachines, int* s)
 {
   int i;
   int r;
 
   printf("\n Eroforras-orientalt Gantt adatok:");
 
-  for ( r=0; r<NR; r++ )
+  for ( r=0; r<NumberOfMachines; r++ )
   {
     printf("\n %d. munkahely:", r);
     printf("\n # \t munka \t indul \t muv.\t bef.");
-    for ( i=0; i<NJ; i++ )
+    for ( i=0; i<NumberOfJobs; i++ )
       printf("\n %d\t%d\t%ld\t%ld\t%ld",
                  i,
                  s[i],
@@ -267,18 +266,18 @@ void print_Res_Gantt( T_JOB* job, int NJ, int NR, int* s)
   }
 }
 
-void print_Job_Gantt( T_JOB* job, int NJ, int NR, int* s)
+void prinStroctOfJobs_Gantt( StroctOfJobs* job, int NumberOfJobs, int NumberOfMachines, int* s)
 {
   int i;
   int r;
 
   printf("\n\n Munka-orientalt Gantt adatok:");
 
-  for ( i=0; i<NJ; i++ )
+  for ( i=0; i<NumberOfJobs; i++ )
   {
     printf("\n %d. munka vegrehajtasa:", s[i] );
     printf("\n # \t gep \t indul \t muv.\t bef.");
-    for ( r=0; r<NR; r++ )
+    for ( r=0; r<NumberOfMachines; r++ )
       printf("\n %d\t%d\t%ld\t%ld\t%ld",
                  r,
                  r,
@@ -289,7 +288,7 @@ void print_Job_Gantt( T_JOB* job, int NJ, int NR, int* s)
   }
 }
 
-void Johnson_alg(T_JOB* job, int NJ, int r, int* s)
+void Johnsons_algorithm(StroctOfJobs* job, int NumberOfJobs, int r, int* s)
 {
   int i, j;
   int index, temp;
@@ -297,19 +296,19 @@ void Johnson_alg(T_JOB* job, int NJ, int r, int* s)
   int* v;      //elorendezes
   int first, last;  //szabad helyek indexe
 
-  v = (int*) calloc(NJ, sizeof(int));
+  v = (int*) calloc(NumberOfJobs, sizeof(int));
 
-  for ( i=0; i<NJ; i++)
+  for ( i=0; i<NumberOfJobs; i++)
      v[i]=i;
 
   //elorendezes
-  for(i=0; i<NJ-1; i++)
+  for(i=0; i<NumberOfJobs-1; i++)
   {
     index = i;
-    value = min_l( job[ v[i] ].ProcT[r], job[ v[i] ].ProcT[r+1]);
-    for(j=i+1; j<NJ; j++)
+    value = Min_Lateness( job[ v[i] ].ProcT[r], job[ v[i] ].ProcT[r+1]);
+    for(j=i+1; j<NumberOfJobs; j++)
      {
-       val_of_j = min_l( job[ v[j] ].ProcT[r], job[ v[j] ].ProcT[r+1]);
+       val_of_j = Min_Lateness( job[ v[j] ].ProcT[r], job[ v[j] ].ProcT[r+1]);
 
       if ( val_of_j < value )
          {
@@ -328,9 +327,9 @@ void Johnson_alg(T_JOB* job, int NJ, int r, int* s)
 
   //utemezes
   first = 0;    //eleje
-  last = NJ-1;  //vege
+  last = NumberOfJobs-1;  //vege
 
-  for( i=0; i<NJ; i++)
+  for( i=0; i<NumberOfJobs; i++)
   {
      if ( job[ v[i] ].ProcT[r] <= job[ v[i] ].ProcT[r+1] )
        { //elorol haladva a mar beutemezettek moge
@@ -349,49 +348,49 @@ void Johnson_alg(T_JOB* job, int NJ, int r, int* s)
   free( v );
 }
 
-long Evaluate(T_JOB* job, int NJ, int NR, int* s)
+long Evaluate(StroctOfJobs* job, int NumberOfJobs, int NumberOfMachines, int* s)
 {
    //kihasznalva az F|perm|Cmax modell jellemzoit
    //Cmax = utolsokent inditott munka bef. ideje az utolso gepen
-   return job[ s[NJ-1]].EndT[NR-1];
+   return job[ s[NumberOfJobs-1]].EndT[NumberOfMachines-1];
 }
 
 
 
-void Fm_Dannenbring_alg(T_JOB* job, int NJ, int NR, int* s)
+void Dannenbring_algorithm(StroctOfJobs* job, int NumberOfJobs, int NumberOfMachines, int* s)
 {
 
   int i;  //job index
   int j;  //gep es operacio index
-  T_JOB* virt_job;
+  StroctOfJobs* virStroctOfJobs;
   //virtualis F2 rendszer
-  virt_job = (T_JOB*) calloc(NJ, sizeof(T_JOB));
-  for ( i=0; i<NJ; i++ )
+  virStroctOfJobs = (StroctOfJobs*) calloc(NumberOfJobs, sizeof(StroctOfJobs));
+  for ( i=0; i<NumberOfJobs; i++ )
    {
-      virt_job[i].ProcT = (long*) calloc(2, sizeof(long));
+      virStroctOfJobs[i].ProcT = (long*) calloc(2, sizeof(long));
 
       //idoadatok transzformacioja
-      virt_job[i].ProcT[0] = 0;
-      virt_job[i].ProcT[1] = 0;
+      virStroctOfJobs[i].ProcT[0] = 0;
+      virStroctOfJobs[i].ProcT[1] = 0;
 
-      for( j=0; j<NR; j++)
+      for( j=0; j<NumberOfMachines; j++)
        {
-         virt_job[i].ProcT[0] += job[i].ProcT[j] * (NR-(j+1) + 1);
-         virt_job[i].ProcT[1] += job[i].ProcT[j] * (j+1);
+         virStroctOfJobs[i].ProcT[0] += job[i].ProcT[j] * (NumberOfMachines-(j+1) + 1);
+         virStroctOfJobs[i].ProcT[1] += job[i].ProcT[j] * (j+1);
        }
    }
 
    //Johnson algoritmus alkalmazása a virtuális környezetben
-   Johnson_alg(virt_job, NJ, 0, s);
+   Johnsons_algorithm(virStroctOfJobs, NumberOfJobs, 0, s);
 
    //mem. felszabaditas
-   for( i=0; i<NJ; i++ )
-      free( virt_job[i].ProcT );
+   for( i=0; i<NumberOfJobs; i++ )
+      free( virStroctOfJobs[i].ProcT );
 
-   free( virt_job );
+   free( virStroctOfJobs );
 }
 
-void Fm_CDS_alg(T_JOB* job, int NJ, T_RES* res, int NR, int* s)
+void CDS_algorithm(StroctOfJobs* job, int NumberOfJobs, StructOfMachines* machine, int NumberOfMachines, int* s)
 {
   int i; //munka
   int r; //gep
@@ -401,35 +400,35 @@ void Fm_CDS_alg(T_JOB* job, int NJ, T_RES* res, int NR, int* s)
 
   long C_act, C_best;
 
-  s_act = (int*) calloc( NJ, sizeof(int) );
-  s_best = (int*) calloc( NJ, sizeof(int) );
+  s_act = (int*) calloc( NumberOfJobs, sizeof(int) );
+  s_best = (int*) calloc( NumberOfJobs, sizeof(int) );
 
-  for ( r=0; r<NR; r++)
+  for ( r=0; r<NumberOfMachines; r++)
     {
       //r es r+1 virtualis ketgepes feladat
       //Johnson
-      Johnson_alg(job, NJ, r, s_act);
+      Johnsons_algorithm(job, NumberOfJobs, r, s_act);
       //szimulacio
-      Simulation_FS( job, NJ, res, NR, s_act, 0);
+      FlowShop_Simulator( job, NumberOfJobs, machine, NumberOfMachines, s_act, 0);
       //kiertekeles
-      C_act = Evaluate(job, NJ, NR, s_act);
+      C_act = Evaluate(job, NumberOfJobs, NumberOfMachines, s_act);
 
       if ( r == 0 )
          {
            C_best = C_act;
-           copy_sch( s_best, s_act, NJ);
+           CopyScheduling( s_best, s_act, NumberOfJobs);
          }
       else
          {
            if ( C_best > C_act )
              {
                C_best = C_act;
-               copy_sch( s_best, s_act, NJ);
+               CopyScheduling( s_best, s_act, NumberOfJobs);
              }
          }
     }
 
-   copy_sch( s, s_best, NJ);
+   CopyScheduling( s, s_best, NumberOfJobs);
 
 
   free( s_act );
@@ -437,37 +436,35 @@ void Fm_CDS_alg(T_JOB* job, int NJ, T_RES* res, int NR, int* s)
 
 }
 
-void copy_sch( int* s1, int* s2, int NJ )
+void CopyScheduling( int* s1, int* s2, int NumberOfJobs )
 {
   int i;
 
-  for ( i=0; i<NJ; i++ )
+  for ( i=0; i<NumberOfJobs; i++ )
     s1[i] = s2[i];
 }
 
 
 
 
-void Print_Res_Cal(T_RES* res, int NR)
+void PrinStructOfMachines_Cal(StructOfMachines* machine, int NumberOfMachines)
 {
    int r;
     int c;
 
    printf("\n\n Eroforrasok rendelkezesre allasi idointervallumai");
-   for (r=0; r<NR; r++)
+   for (r=0; r<NumberOfMachines; r++)
      {
-       printf("\n %d. eroforras [%d]", r, res[r].NCal );
+       printf("\n %d. eroforras [%d]", r, machine[r].NCal );
        printf("\n # \t Kezdet\tVege");
-       for (c=0; c<res[r].NCal; c++)
-         printf("\n %d \t %ld \t %ld", c, res[r].Cal[c].ST, res[r].Cal[c].ET);
+       for (c=0; c<machine[r].NCal; c++)
+         printf("\n %d \t %ld \t %ld", c, machine[r].Cal[c].ST, machine[r].Cal[c].ET);
     }
 }
 
-int Load_STET_to_Cal(long* st, long* et, T_RES* res, int r)
+int Load_STET_to_Cal(long* st, long* et, StructOfMachines* machine, int r)
 {
-   //az algoritmus megkeresi azt a legkorabbi rendelkezesre allasi
-   //idointervallumot, amelyre megszakitas nelkul el tudja helyezni
-   //a muveletet
+   //megszakitas nelkuli elhelyezes
 
   int c;  //intervallum index
   long new_st;  //modositott kezdet
@@ -482,15 +479,15 @@ int Load_STET_to_Cal(long* st, long* et, T_RES* res, int r)
   found = -1; //nincs talalat
   c = 0;
 
-  while( c < res[r].NCal )
+  while( c < machine[r].NCal )
     {
-      if ( new_st < res[r].Cal[c].ET ) //vizsgalhato
+      if ( new_st < machine[r].Cal[c].ET ) //vizsgalhato
         {
            //hatarra illesztes ha szukseges
-           new_st = max_l( new_st, res[r].Cal[c].ST);
+           new_st = Max_Lateness( new_st, machine[r].Cal[c].ST);
            new_et = new_st + size;   //vegenek az illesztese
 
-           if ( new_et <= res[r].Cal[c].ET )
+           if ( new_et <= machine[r].Cal[c].ET )
              {  //belefer, kesz
                 found = c;
                 break;
@@ -498,9 +495,9 @@ int Load_STET_to_Cal(long* st, long* et, T_RES* res, int r)
            else
              { //kilog
                c++;
-               if ( c >= res[r].NCal )
+               if ( c >= machine[r].NCal )
                  {
-                    new_st = res[r].Cal[c-1].ET;
+                    new_st = machine[r].Cal[c-1].ET;
                     new_et = new_st + size;
                     break;
                  }
