@@ -141,13 +141,12 @@ int main(int argc, char* argv[])
 
    printf("\n s = %ld", s);
    printf("\n e = %ld", e);
-   printf("\n x = %ld", x);
+   printf("\n x = %d", x);
 
 
 
 
    }
-   getch();
 
    //ad-hoc sorrend szimulacioja
    printf("\n Ad-hoc sorrend");
@@ -194,8 +193,7 @@ int main(int argc, char* argv[])
    }
    free( res );
 
-  getch();
-  return 0;
+    return 0;
 }
 
 void Simulation_FS( T_JOB* job, int NJ, T_RES* res, int NR, int* s, long t0)
@@ -476,7 +474,7 @@ void Fm_Search_alg(T_JOB* job, int NJ, T_RES* res, int NR, int* s, int STEP, int
    for ( loop = 1; loop<=LOOP; loop++ )
     {
       //szomszed generalasa
-      Neighbour(s_0, s_act, NJ);
+      
       //szimulacio
       Simulation_FS( job, NJ, res, NR, s_act, 0);
       //kiertekeles
