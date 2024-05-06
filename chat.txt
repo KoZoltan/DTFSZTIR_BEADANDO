@@ -1,0 +1,9 @@
+void Modulated_FS_Simulation( T_JOB* job, int NJ, T_RES* res, int NR, int* s, long t0);
+void Johnson_Ordering_Algorithm(T_JOB* job, int NJ, int r, int* s);
+long Performance_Evaluation(T_JOB* job, int NJ, int NR, int* s);
+void Dannenbring_Algorithm_Modulation(T_JOB* job, int NJ, int NR, int* s);
+void Copy_Schedule( int* s1, int* s2, int NJ );
+void CDS_Algorithm_Modulation(T_JOB* job, int NJ, T_RES* res, int NR, int* s);
+void Print_Resource_Calendars(T_RES* res, int NR);
+int Assign_ST_ET_to_Calendar(long* st, long* et, T_RES* res, int r);
+

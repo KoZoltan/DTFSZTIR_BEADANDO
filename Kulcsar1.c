@@ -119,11 +119,11 @@ int main(int argc, char* argv[])
      job[i].StartT = (long*) calloc(NumberOfMachines, sizeof(long));  //inditasi idopontok gepenkent
      job[i].EndT = (long*) calloc(NumberOfMachines, sizeof(long));  //befejezesi idopontok gepenkent
 
-    //i] = i; //ad-hoc sorrend
+    
     s[i] = NumberOfJobs-i-1; //forditott ad-hoc sorrend
    }
 
-   {   //teszt blokk
+   {//teszt blokk
    int m;
    long s, e;
    int x;
@@ -150,8 +150,8 @@ int main(int argc, char* argv[])
    //ad-hoc sorrend szimulacioja
    printf("\n Ad-hoc sorrend");
    FlowShop_Simulator( job, NumberOfJobs, machine, NumberOfMachines, s, 0);
-   //prinStructOfMachines_Gantt( job, NumberOfJobs, NumberOfMachines, s);
-   //prinStroctOfJobs_Gantt( job, NumberOfJobs, NumberOfMachines, s);
+   prinStructOfMachines_Gantt( job, NumberOfJobs, NumberOfMachines, s);
+   prinStroctOfJobs_Gantt( job, NumberOfJobs, NumberOfMachines, s);
    printf("\n Cmax = %ld", Evaluate(job, NumberOfJobs, NumberOfMachines, s) );
 
   
@@ -159,16 +159,16 @@ int main(int argc, char* argv[])
    printf("\n\n Dannenbring sorrend");
    Dannenbring_algorithm(job, NumberOfJobs, NumberOfMachines, s);
    FlowShop_Simulator( job, NumberOfJobs, machine, NumberOfMachines, s, 0);
-   //prinStructOfMachines_Gantt( job, NumberOfJobs, NumberOfMachines, s);
-   //prinStroctOfJobs_Gantt( job, NumberOfJobs, NumberOfMachines, s);
+   prinStructOfMachines_Gantt( job, NumberOfJobs, NumberOfMachines, s);
+   prinStroctOfJobs_Gantt( job, NumberOfJobs, NumberOfMachines, s);
    printf("\n Cmax = %ld", Evaluate(job, NumberOfJobs, NumberOfMachines, s) );
 
    //CDS algoritmus
    printf("\n\n CDS sorrend");
    CDS_algorithm(job, NumberOfJobs, machine, NumberOfMachines, s);
    FlowShop_Simulator( job, NumberOfJobs, machine, NumberOfMachines, s, 0);
-   //prinStructOfMachines_Gantt( job, NumberOfJobs, NumberOfMachines, s);
-   //prinStroctOfJobs_Gantt( job, NumberOfJobs, NumberOfMachines, s);
+   prinStructOfMachines_Gantt( job, NumberOfJobs, NumberOfMachines, s);
+   prinStroctOfJobs_Gantt( job, NumberOfJobs, NumberOfMachines, s);
    printf("\n Cmax = %ld", Evaluate(job, NumberOfJobs, NumberOfMachines, s) );
 
    
